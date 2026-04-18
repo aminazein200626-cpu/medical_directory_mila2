@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:medical_directory/Screen_add/add_doctor_screen.dart';
+import 'package:medical_directory/main.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
 
   Future<void> _makeCall(String number) async {
     final Uri url = Uri.parse('tel:$number');
@@ -12,9 +21,22 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  void _onItemTapped(int index) {
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddDoctorScreen()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     const Color primaryMint = Color(0xFF70FFD8);
 
     return Scaffold(
@@ -22,6 +44,14 @@ class HomeScreen extends StatelessWidget {
         title: const Text("Medical Directory Mila",
             style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              MyApp.of(context).toggleTheme();
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -51,10 +81,10 @@ class HomeScreen extends StatelessWidget {
               mainAxisSpacing: 15,
               crossAxisSpacing: 15,
               children: [
-                _buildCategoryCard(context, "General Medicine", FontAwesomeIcons.stethoscope, isDark),
-                _buildCategoryCard(context, "Dentistry", FontAwesomeIcons.tooth, isDark),
+                _buildCategoryCard(context, "Doctors", FontAwesomeIcons.userDoctor, isDark),
+                _buildCategoryCard(context, "Hospitals", FontAwesomeIcons.hospital, isDark),
                 _buildCategoryCard(context, "Pharmacy", FontAwesomeIcons.pills, isDark),
-                _buildCategoryCard(context, "Pediatrics", FontAwesomeIcons.baby, isDark),
+                _buildCategoryCard(context, "Dentistry", FontAwesomeIcons.tooth, isDark),
               ],
             ),
             const SizedBox(height: 30),
@@ -70,9 +100,11 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: primaryMint,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: isDark ? Colors.black : primaryMint,
+        selectedItemColor: isDark ? primaryMint : Colors.black,
+        unselectedItemColor: isDark ? Colors.white54 : Colors.black54,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: "Saved"),

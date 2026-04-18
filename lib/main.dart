@@ -1,39 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:medical_directory/screens/home_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const MedicalApp());
+  runApp(const MyApp());
 }
 
-class MedicalApp extends StatelessWidget {
-  const MedicalApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+
+  static _MyAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>()!;
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryMint = Color(0xFF70FFD8);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Medical Directory Mila',
+      title: 'Medical Directory',
       theme: ThemeData(
-        brightness: Brightness.light,
-        primaryColor: primaryMint,
-        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF00695C),
+          primary: const Color(0xFF00695C),
+        ),
+        useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          backgroundColor: primaryMint,
-          foregroundColor: Colors.black,
+          backgroundColor: Color(0xFF00695C),
+          foregroundColor: Colors.white,
         ),
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: primaryMint,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: primaryMint,
-          foregroundColor: Colors.black,
-        ),
-      ),
-      themeMode: ThemeMode.system,
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      themeMode: _themeMode,
       home: const HomeScreen(),
     );
   }
