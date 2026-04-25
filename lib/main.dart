@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'package:medical_directory/screens/home_screen.dart';
+import 'package:medical_directory/screens/welcome_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Medical Directory',
+      title: 'Medical Directory Mila',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF00695C),
@@ -40,9 +41,16 @@ class _MyAppState extends State<MyApp> {
           foregroundColor: Colors.white,
         ),
       ),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF70FFD8),
+          brightness: Brightness.dark,
+        ),
+      ),
       themeMode: _themeMode,
-      home: const HomeScreen(),
+
+      home: const WelcomeScreen(),
     );
   }
 }

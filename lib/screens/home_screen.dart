@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:medical_directory/Screen_add/add_doctor_screen.dart';
+import 'package:medical_directory/screens/doctor_category_screen.dart';
 import 'package:medical_directory/main.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
+  // دالة الاتصال بأرقام الطوارئ في ميلة
   Future<void> _makeCall(String number) async {
     final Uri url = Uri.parse('tel:$number');
     if (await canLaunchUrl(url)) {
@@ -21,35 +22,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AddDoctorScreen()),
-      );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // ألوان الديزاين الموحدة
     const Color primaryMint = Color(0xFF70FFD8);
+    final Color cardBg = isDark ? const Color(0xFF1C2523) : Colors.grey[100]!;
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0D1412) : Colors.white,
       appBar: AppBar(
-        title: const Text("Medical Directory Mila",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          "Medical Directory Mila",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () {
-              MyApp.of(context).toggleTheme();
-            },
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: primaryMint),
+            onPressed: () => MyApp.of(context).toggleTheme(),
           ),
         ],
       ),
@@ -58,55 +56,101 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // خانة البحث
             TextField(
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
               decoration: InputDecoration(
-                hintText: "Search for Doctor",
-                prefixIcon: const Icon(Icons.search),
+                hintText: "Search for Doctor...",
+                hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+                prefixIcon: Icon(Icons.search, color: primaryMint),
                 filled: true,
-                fillColor: isDark ? Colors.grey[850] : Colors.grey[200],
+                fillColor: isDark ? Colors.grey[900] : Colors.grey[200],
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
             const SizedBox(height: 25),
-            const Text("Category Section",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+
+            Text(
+              "Category Section",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black
+              ),
+            ),
             const SizedBox(height: 15),
+
+            // GridView يستجيب لوضعية الشاشة (2 في الطول، 4 في العرض)
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
+              crossAxisCount: isLandscape ? 4 : 2,
               mainAxisSpacing: 15,
               crossAxisSpacing: 15,
+              childAspectRatio: isLandscape ? 1.3 : 1.1,
               children: [
-                _buildCategoryCard(context, "Doctors", FontAwesomeIcons.userDoctor, isDark),
-                _buildCategoryCard(context, "Hospitals", FontAwesomeIcons.hospital, isDark),
-                _buildCategoryCard(context, "Pharmacy", FontAwesomeIcons.pills, isDark),
-                _buildCategoryCard(context, "Dentistry", FontAwesomeIcons.tooth, isDark),
+                _buildCategoryCard(
+                    context,
+                    "Doctors",
+                    FontAwesomeIcons.userDoctor,
+                    cardBg,
+                    isDark,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DoctorCategoryScreen()),
+                      );
+                    }
+                ),
+                _buildCategoryCard(context, "Hospitals", FontAwesomeIcons.hospital, cardBg, isDark),
+                _buildCategoryCard(context, "Pharmacy", FontAwesomeIcons.pills, cardBg, isDark),
+                _buildCategoryCard(context, "Dentistry", FontAwesomeIcons.tooth, cardBg, isDark),
               ],
             ),
+
             const SizedBox(height: 30),
-            const Text("Emergency Hotlines",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.redAccent)),
+
+            Text(
+              "Emergency Hotlines",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent
+              ),
+            ),
             const SizedBox(height: 10),
-            _buildEmergencyItem("Protection Civile", "14", Colors.orange),
-            _buildEmergencyItem("Police", "1548", Colors.blue),
+
+            // قائمة الطوارئ تتوزع بشكل أفضل في الـ Landscape
+            isLandscape
+                ? Row(
+              children: [
+                Expanded(child: _buildEmergencyItem("Protection Civile", "14", Colors.orange)),
+                const SizedBox(width: 10),
+                Expanded(child: _buildEmergencyItem("Police", "1548", Colors.blue)),
+              ],
+            )
+                : Column(
+              children: [
+                _buildEmergencyItem("Protection Civile", "14", Colors.orange),
+                _buildEmergencyItem("Police", "1548", Colors.blue),
+              ],
+            ),
             _buildEmergencyItem("Gendarmerie Nationale", "1055", Colors.green),
-            _buildEmergencyItem("Medical Emergency (SAMU)", "115", Colors.red),
-            _buildEmergencyItem("Anti-Poison Center", "021979898", Colors.purple),
+            _buildEmergencyItem("SAMU", "115", Colors.red),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: isDark ? Colors.black : primaryMint,
-        selectedItemColor: isDark ? primaryMint : Colors.black,
+        backgroundColor: isDark ? Colors.black : Colors.white,
+        selectedItemColor: primaryMint,
         unselectedItemColor: isDark ? Colors.white54 : Colors.black54,
+        onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: "Saved"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
         ],
@@ -114,30 +158,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, String title, IconData icon, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FaIcon(icon, size: 40, color: const Color(0xFF00BFA5)),
-          const SizedBox(height: 12),
-          Text(title, textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
+  Widget _buildCategoryCard(BuildContext context, String title, IconData icon, Color bg, bool isDark, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FaIcon(icon, size: 35, color: const Color(0xFF00BFA5)),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEmergencyItem(String label, String phone, Color iconColor) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.transparent,
       child: ListTile(
-        leading: Icon(Icons.phone_enabled, color: iconColor),
+        contentPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          backgroundColor: iconColor.withOpacity(0.1),
+          child: Icon(Icons.phone_forwarded, color: iconColor, size: 20),
+        ),
         title: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         trailing: Text(phone, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
         onTap: () => _makeCall(phone),
